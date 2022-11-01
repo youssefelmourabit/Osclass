@@ -3,6 +3,17 @@
     color:               @color-gray-black;
     text-decoration:     none;
 }
+#sidebar a#market_connect{
+    background-color:   #7ed1e1;
+    color:              #fff;
+    margin:             0px 4px;
+    padding:            2px 11px;
+    font-weight:        600;
+}
+#sidebar a#market_connect:hover{
+    background-color:   #38bed7;
+}
+
 #sidebar h3 .ico{
     margin-left:         16px;
     *margin-left:        0px;
@@ -33,7 +44,7 @@
 }
 #sidebar .oscmenu > li > ul{
     overflow: auto;
-    overflow-y:          hidden;
+    overflow-y:          scroll;
     overflow-x:          visible;
     max-height: 600%;
 }
@@ -47,9 +58,6 @@ body.compact #sidebar .oscmenu .current{
     background:          @color-gray-hardblack;
     -webkit-box-shadow: none;
     box-shadow: none;
-}
-body.compact #sidebar .oscmenu li#menu_plugins ul{
-    overflow-y:auto;
 }
 #show-more li{
     float:left;

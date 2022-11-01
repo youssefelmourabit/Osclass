@@ -70,7 +70,7 @@ function osc_deleteResource( $id , $admin) {
 }
 
 /**
- * Tries to delete the directory recursivaly.
+ * Tries to delete the directory recursively.
  * @return true on success.
  */
 function osc_deleteDir($path) {
@@ -90,7 +90,7 @@ function osc_deleteDir($path) {
     while ($file = @readdir($fd)) {
         if ($file != '.' && $file != '..') {
             if (!is_dir($path . '/' . $file)) {
-                @chmod($path."/".$file, 0777);
+                @chmod($path."/".$file, 0755);
                 if (!@unlink($path . '/' . $file)) {
                     closedir($fd);
                     return false;
@@ -847,7 +847,7 @@ function osc_downloadFile($sourceFile, $downloadedFile, $post_data = null)
         $fp = @fopen (osc_content_path() . 'downloads/' . $downloadedFile, 'w+');
         if($fp) {
             $ch = curl_init($sourceFile);
-            @curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+            @curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
             curl_setopt($ch, CURLOPT_USERAGENT, Params::getServerParam('HTTP_USER_AGENT') . ' Osclass (v.' . osc_version() . ')');
             curl_setopt($ch, CURLOPT_FILE, $fp);
             @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -883,6 +883,7 @@ function osc_file_get_contents($url, $post_data = null)
     if( testCurl() ) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
+        @curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_USERAGENT, Params::getServerParam('HTTP_USER_AGENT') . ' Osclass (v.' . osc_version() . ')');
         if( !defined('CURLOPT_RETURNTRANSFER') ) define('CURLOPT_RETURNTRANSFER', 1);
         @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -974,7 +975,7 @@ function osc_unzip_file($file, $to) {
         }
     }
 
-    @chmod($to, 0777);
+    @chmod($to, 0755);
 
     if (!is_writable($to)) {
         return 0;
@@ -1020,6 +1021,9 @@ function _unzip_file_ziparchive($file, $to) {
         }
 
         if (substr($file['name'], 0, 9) === '__MACOSX/') {
+            continue;
+        }
+        if (strpos($file['name'], '../')!==false) {
             continue;
         }
 
@@ -1075,6 +1079,9 @@ function _unzip_file_pclzip($zip_file, $to) {
     // Extract the files from the zip
     foreach ($files as $file) {
         if (substr($file['filename'], 0, 9) === '__MACOSX/') {
+            continue;
+        }
+        if (strpos($file['filename'], "../")!==false) {
             continue;
         }
 
@@ -1273,7 +1280,7 @@ function osc_change_permissions( $dir = ABS_PATH ) {
             if($file!="." && $file!=".." && substr($file,0,1)!="." ) {
                 if(is_dir(str_replace("//", "/", $dir . "/" . $file))) {
                     if(!is_writable(str_replace("//", "/", $dir . "/" . $file))) {
-                        $res = @chmod( str_replace("//", "/", $dir . "/" . $file), 0777);
+                        $res = @chmod( str_replace("//", "/", $dir . "/" . $file), 0755);
                         if(!$res) { return false; };
                     }
                     if(str_replace("//", "/", $dir)==(ABS_PATH . "oc-content/themes")) {
@@ -1299,7 +1306,7 @@ function osc_change_permissions( $dir = ABS_PATH ) {
                     }
                 } else {
                     if(!is_writable(str_replace("//", "/", $dir . "/" . $file))) {
-                        return @chmod( str_replace("//", "/", $dir . "/" . $file), 0777);
+                        return @chmod( str_replace("//", "/", $dir . "/" . $file), 0755);
                     } else {
                         return true;
                     }
@@ -1810,7 +1817,7 @@ function osc_do_upgrade() {
     /***********************
      **** DOWNLOAD FILE ****
      ***********************/
-    $data = osc_file_get_contents("http://osclass.org/latest_version_v1.php");
+    $data = osc_file_get_contents("https://osclass.org/latest_version_v1.php");
     $data = json_decode(substr($data, 1, strlen($data)-3), true);
     $source_file = $data['url'];
     if ($source_file != '') {
@@ -1943,7 +1950,7 @@ function osc_do_upgrade() {
 }
 
 function osc_do_auto_upgrade() {
-    $data = osc_file_get_contents('http://osclass.org/latest_version_v1.php?callback=?');
+    $data = osc_file_get_contents('https://osclass.org/latest_version_v1.php?callback=?');
     $data = preg_replace('|^\?\((.*?)\);$|', '$01', $data);
     $json = json_decode($data);
     $result['error'] = 0;

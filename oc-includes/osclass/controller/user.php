@@ -137,6 +137,7 @@
                                                 $this->doView('user-change_username.php');
                 break;
                 case('change_username_post'):   //change username
+                                                osc_csrf_check();
                                                 $username = osc_sanitize_username(Params::getParam('s_username'));
                                                 osc_run_hook('before_username_change', Session::newInstance()->_get('userId'), $username);
                                                 if($username!='') {
@@ -253,6 +254,7 @@
                     $secret = Params::getParam('secret');
                     if(osc_is_web_user_logged_in()) {
                         $user = User::newInstance()->findByPrimaryKey(osc_logged_user_id());
+                        osc_run_hook('before_user_delete', $user);
                         View::newInstance()->_exportVariableToView('user', $user);
                         if(!empty($user) && osc_logged_user_id()==$id && $secret==$user['s_secret']) {
                             User::newInstance()->deleteUser(osc_logged_user_id());

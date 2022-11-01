@@ -29,10 +29,10 @@
             switch($this->action) {
                 case('media'):
                     // calling the media view
-                    $max_upload   = (int)( ini_get('upload_max_filesize') );
-                    $max_post     = (int)( ini_get('post_max_size') );
-                    $memory_limit = (int)( ini_get('memory_limit') );
-                    $upload_mb    = min($max_upload, $max_post, $memory_limit) * 1024;
+                    $max_upload   = $this->_sizeToKB( ini_get('upload_max_filesize') );
+                    $max_post     = $this->_sizeToKB( ini_get('post_max_size') );
+                    $memory_limit = $this->_sizeToKB( ini_get('memory_limit') );
+                    $upload_mb    = min($max_upload, $max_post, $memory_limit);
 
                     $this->_exportVariableToView('max_size_upload', $upload_mb);
                     $this->doView('settings/media.php');
@@ -193,7 +193,7 @@
                             // Create normal size
                             $path_normal = $path = osc_base_path().$resource['s_path'].$resource['pk_i_id'].'.'.$resource['s_extension'];
                             $size = explode('x', osc_normal_dimensions());
-                            $img = ImageResizer::fromFile($image_tmp)->resizeTo($size[0], $size[1]);
+                            $img = ImageProcessing::fromFile($image_tmp)->resizeTo($size[0], $size[1]);
                             if($use_original) {
                                 if( osc_is_watermark_text() ) {
                                     $img->doWatermarkText(osc_watermark_text(), osc_watermark_text_color());
@@ -206,12 +206,12 @@
                             // Create preview
                             $path = osc_base_path().$resource['s_path'].$resource['pk_i_id'].'_preview.'.$resource['s_extension'];
                             $size = explode('x', osc_preview_dimensions());
-                            ImageResizer::fromFile($path_normal)->resizeTo($size[0], $size[1])->saveToFile($path);
+                            ImageProcessing::fromFile($path_normal)->resizeTo($size[0], $size[1])->saveToFile($path);
 
                             // Create thumbnail
                             $path = osc_base_path().$resource['s_path'].$resource['pk_i_id'].'_thumbnail.'.$resource['s_extension'];
                             $size = explode('x', osc_thumbnail_dimensions());
-                            ImageResizer::fromFile($path_normal)->resizeTo($size[0], $size[1])->saveToFile($path);
+                            ImageProcessing::fromFile($path_normal)->resizeTo($size[0], $size[1])->saveToFile($path);
 
                             osc_run_hook('regenerated_image', ItemResource::newInstance()->findByPrimaryKey($resource['pk_i_id']));
                         } else {
@@ -224,6 +224,27 @@
                     $this->redirectTo(osc_admin_base_url(true).'?page=settings&action=media');
                 break;
             }
+        }
+
+        function _sizeToKB($sSize)
+        {
+            $sSuffix = strtoupper(substr($sSize, -1));
+            if (!in_array($sSuffix,array('P','T','G','M','K'))){
+                return (int)$sSize;
+            }
+            $iValue = substr($sSize, 0, -1);
+            switch ($sSuffix) {
+                case 'P':
+                    $iValue *= 1024;
+                case 'T':
+                    $iValue *= 1024;
+                case 'G':
+                    $iValue *= 1024;
+                case 'M':
+                    $iValue *= 1024;
+                    break;
+            }
+            return (int)$iValue;
         }
     }
 

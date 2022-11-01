@@ -104,7 +104,7 @@ FB;
         }
 
         static public function options_input_text($field = null) {
-            parent::generic_input_text("s_options", (isset($field) && isset($field["s_options"])) ? $field["s_options"] : "", null, false);
+            parent::generic_input_text("s_options", (isset($field) && isset($field["s_options"])) ? html_entity_decode($field["s_options"]) : "", null, false);
             return true;
         }
 
@@ -150,8 +150,9 @@ FB;
                             $field['s_value']   = $temp;
                         }
                     } else {
-                        $temp['from']   = Params::getParam('meta['.$field['pk_i_id'].'][from]');
-                        $temp['to']     = Params::getParam('meta['.$field['pk_i_id'].'][to]');
+                        $_meta = Params::getParam('meta');
+                        $temp['from']   = @(int)$_meta[$field['pk_i_id']]['from'];
+                        $temp['to']     = @(int)$_meta[$field['pk_i_id']]['to'];
                         $field['s_value'] = $temp;
                     }
                 }
